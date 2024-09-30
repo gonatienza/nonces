@@ -9,15 +9,23 @@ Te module contains two main classes: :class:`nonces.Nonce` and
 :class:`nonces.Nonces`.
 
 
+Installation
+--------------------------
+
+.. code-block::
+
+   pip install nonces
+
+
 Example of random `Nonce`.
 --------------------------
 
 .. code-block::
 
-    from nonces import Nonce
+   from nonces import Nonce
 
-    # This will generate a random one-time 24 bytes nonce
-    nonce = Nonce.random(24)
+   # This will generate a random one-time 24 bytes nonce
+   nonce = Nonce.random(24)
 
 
 Example of `Nonces` with counter.
