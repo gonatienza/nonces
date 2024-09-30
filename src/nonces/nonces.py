@@ -23,6 +23,7 @@ class Nonce(bytes):
     Each unique nonce value is an instantiated
         object of this bytes subclass.
     """
+    __module__ = "nonces"
 
     @classmethod
     def from_bytes(
@@ -66,6 +67,7 @@ class Nonces:
     :cvar _ORDER_OPTIONS: byte order options.
     """
 
+    __module__ = "nonces"
     _DEFAULT_INCREMENT: ClassVar[int] = 1
     _ORDER_OPTIONS: ClassVar[list] = ["big", "little"]
 
