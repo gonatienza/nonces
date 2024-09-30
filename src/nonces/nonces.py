@@ -106,7 +106,7 @@ class Nonces:
                 "order must be '{}' or '{}'".format(*self._ORDER_OPTIONS)
             )
         if not isinstance(trailing_counter, bool):
-            raise TypeError("trail must be bool")
+            raise TypeError("trailing_counter must be bool")
 
         self._size = size
         self._counter_size = counter_size
