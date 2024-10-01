@@ -110,6 +110,7 @@ class TestNonces:
         trailing_counter: bool,
         nonce: bytes,
     ):
+        nonce = Nonce.from_bytes(nonce)
         nonces = Nonces(size, counter_size, seed, order, trailing_counter)
         assert nonces.update() == nonce
 
