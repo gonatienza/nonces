@@ -70,7 +70,7 @@ for i in range(len(SIZES)):
 class TestNonce:
     @pytest.mark.parametrize("size", SIZES)
     def test_from_bytes(self, size):
-        nonce_bytes = b"A0" * size
+        nonce_bytes = b"\xa0" * size
         nonce = Nonce.from_bytes(nonce_bytes)
         assert nonce == nonce_bytes
         assert isinstance(nonce, Nonce)
@@ -110,7 +110,6 @@ class TestNonces:
         trailing_counter: bool,
         nonce: bytes,
     ):
-        nonce = Nonce.from_bytes(nonce)
         nonces = Nonces(size, counter_size, seed, order, trailing_counter)
         assert nonces.update() == nonce
 
