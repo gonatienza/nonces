@@ -69,12 +69,24 @@ for i in range(len(SIZES)):
 
 class TestNonce:
     @pytest.mark.parametrize("size", SIZES)
-    def test(self, size):
+    def test_from_bytes(self, size):
         nonce_bytes = b"A0" * size
-        nonce = Nonce(nonce_bytes)
+        nonce = Nonce.from_bytes(nonce_bytes)
         assert nonce == nonce_bytes
         assert isinstance(nonce, Nonce)
         assert isinstance(nonce, bytes)
+
+    @pytest.mark.parametrize("size", SIZES)
+    def test_random(self, size):
+        nonce = Nonce.random(size)
+        assert isinstance(nonce, Nonce)
+        assert isinstance(nonce, bytes)
+
+    def test_bad_params(self):
+        with pytest.raises(TypeError):
+            Nonce.from_bytes("test")
+        with pytest.raises(TypeError):
+            Nonce.random("test")
 
 
 class TestNonces:
@@ -87,7 +99,7 @@ class TestNonces:
             "trailing_counter",
             "nonce"
         ),
-        VECTORS,
+        VECTORS
     )
     def test_params(
         self,
@@ -161,3 +173,19 @@ class TestNonces:
         nonces.increment = 2
         nonces.update()
         assert nonces.counter == nonces.max_counter
+
+    @pytest.mark.parametrize(
+        "size, c_size", list(zip(SIZES, C_SIZES))
+    )
+    def test_properties(self, size, c_size):
+        nonces = Nonces(size, c_size)
+        nonces.update()
+        assert isinstance(nonces.counter_bytes, bytes)
+        assert isinstance(nonces.seed_bytes, bytes)
+        assert isinstance(nonces.nonce, bytes)
+        assert isinstance(nonces.increment, int)
+        assert isinstance(nonces.counter, int)
+        assert isinstance(nonces.max_counter, int)
+        assert isinstance(nonces.size, int)
+        assert isinstance(nonces.counter_size, int)
+        assert isinstance(nonces.seed_size, int)

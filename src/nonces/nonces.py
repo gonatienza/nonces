@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TypeVar, Optional, ClassVar
+from typing import ClassVar, Optional, TypeVar
 from os import urandom
 
 
@@ -36,6 +36,9 @@ class Nonce(bytes):
         :param nonce: nonce bytes.
         :rtype: Nonce.
         """
+        if not isinstance(nonce, bytes):
+            raise TypeError("nonce must be bytes")
+
         return cls(nonce)
 
     @classmethod
@@ -117,11 +120,7 @@ class Nonces:
             self._seed_bytes = urandom(self._seed_size)
         else:
             if len(seed) != self._seed_size:
-                raise ValueError(
-                    "seed must be {} bytes".format(
-                        self._seed_size
-                    )
-                )
+                raise ValueError(f"seed must be {self._seed_size} bytes")
             self._seed_bytes = seed
         self._order = order
         self._trailing_counter = trailing_counter
@@ -173,11 +172,7 @@ class Nonces:
         if not isinstance(counter, int):
             raise TypeError("must be integer")
         if not counter <= self._max_counter:
-            raise ValueError(
-                "must be smaller than {}".format(
-                    self._max_counter
-                )
-            )
+            raise ValueError(f"must be smaller than {self._max_counter}")
         if counter < self._counter:
             raise AssertionError(
                 "counter must be greater than current counter"
@@ -255,11 +250,7 @@ class Nonces:
             raise ValueError("must be greater than 0")
         max_increment = self._max_counter - self._counter
         if value > max_increment:
-            raise ValueError(
-                "must be smaller than {}".format(
-                    max_increment
-                )
-            )
+            raise ValueError(f"must be smaller than {max_increment}")
         self._increment = value
 
     @property
