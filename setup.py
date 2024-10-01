@@ -13,15 +13,14 @@
 # limitations under the License.
 from setuptools import setup
 from src.nonces import (
-    __title__,
-    __version__,
-    __description__,
-    __url__,
     __author__,
+    __description__,
     __email__,
-    __license__
+    __license__,
+    __title__,
+    __url__,
+    __version__
 )
-
 
 setup(
     name=__title__,
