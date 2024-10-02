@@ -11,74 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import json
 import pytest
 from nonces import Nonce, Nonces
 
 
-SIZES = [8, 8, 12, 12, 16, 16, 24, 24, 32, 32]
-C_SIZES = [2, 4, 4, 6, 6, 8, 8, 12, 12, 16]
-S_SIZES = [6, 4, 8, 6, 10, 8, 16, 12, 20, 16]
-
-
-assert len(SIZES) == len(C_SIZES) == len(S_SIZES)
-for i in range(len(SIZES)):
-    assert SIZES[i] == C_SIZES[i] + S_SIZES[i]
-
-
-ALL_SIZES = list(zip(SIZES, S_SIZES, C_SIZES))
-VECTORS = []
-for i in range(len(SIZES)):
-    VECTORS.extend(
-        [
-            # size, counter_size, seed, order, trailing_counter, firt_nonce
-            [
-                SIZES[i],
-                C_SIZES[i],
-                b"\xff" * S_SIZES[i],
-                "big",
-                True,
-                b"\xff" * S_SIZES[i] + b"\x00" * (C_SIZES[i] - 1) + b"\x01"
-            ],
-            [
-                SIZES[i],
-                C_SIZES[i],
-                b"\xff" * S_SIZES[i],
-                "little",
-                True,
-                b"\xff" * S_SIZES[i] + b"\x01" + b"\x00" * (C_SIZES[i] - 1)
-            ],
-            [
-                SIZES[i],
-                C_SIZES[i],
-                b"\xff" * S_SIZES[i],
-                "big",
-                False,
-                b"\x00" * (C_SIZES[i] - 1) + b"\x01" + b"\xff" * S_SIZES[i]
-            ],
-            [
-                SIZES[i],
-                C_SIZES[i],
-                b"\xff" * S_SIZES[i],
-                "little",
-                False,
-                b"\x01" + b"\x00" * (C_SIZES[i] - 1) + b"\xff" * S_SIZES[i]
-            ]
-        ]
-    )
+base_dir = os.path.dirname(__file__)
+file_path = os.path.join(base_dir, "vectors", "nonces.json")
+with open(file_path, 'r') as file:
+    VECTORS = json.load(file)
+for i in VECTORS:
+    i["size"] = int(i["size"])
+    i["counter_size"] = int(i["counter_size"])
+    i["seed"] = bytes.fromhex(i["seed"])
+    i["nonce"] = bytes.fromhex(i["nonce"])
 
 
 class TestNonce:
-    @pytest.mark.parametrize("size", SIZES)
-    def test_from_bytes(self, size):
-        nonce_bytes = b"\xa0" * size
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_from_bytes(self, vector):
+        nonce_bytes = b"\xa0" * vector["size"]
         nonce = Nonce.from_bytes(nonce_bytes)
         assert nonce == nonce_bytes
         assert isinstance(nonce, Nonce)
         assert isinstance(nonce, bytes)
 
-    @pytest.mark.parametrize("size", SIZES)
-    def test_random(self, size):
-        nonce = Nonce.random(size)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_random(self, vector):
+        nonce = Nonce.random(vector["size"])
         assert isinstance(nonce, Nonce)
         assert isinstance(nonce, bytes)
 
@@ -90,42 +51,29 @@ class TestNonce:
 
 
 class TestNonces:
-    @pytest.mark.parametrize(
-        (
-            "size",
-            "counter_size",
-            "seed",
-            "order",
-            "trailing_counter",
-            "nonce"
-        ),
-        VECTORS
-    )
-    def test_params(
-        self,
-        size: int,
-        counter_size: int,
-        seed: bytes,
-        order: str,
-        trailing_counter: bool,
-        nonce: bytes,
-    ):
-        nonce = Nonce.from_bytes(nonce)
-        nonces = Nonces(size, counter_size, seed, order, trailing_counter)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_params(self, vector):
+        nonce = Nonce.from_bytes(vector["nonce"])
+        nonces = Nonces(
+            vector["size"],
+            vector["counter_size"],
+            vector["seed"],
+            vector["order"],
+            vector["trailing_counter"],
+        )
         assert nonces.update() == nonce
+        assert bytes(nonces) == nonce
 
-    @pytest.mark.parametrize(
-        "size, c_size", list(zip(SIZES, C_SIZES))
-    )
-    def test_overflow(self, size, c_size):
-        nonces = Nonces(size, c_size)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_overflow(self, vector):
+        nonces = Nonces(vector["size"], vector["counter_size"])
         nonces.set_counter(nonces.max_counter)
         with pytest.raises(OverflowError):
             nonces.update()
 
     def test_bad_params(self):
         with pytest.raises(TypeError):
-            Nonces("test")
+            Nonces("test", 4)
         with pytest.raises(ValueError):
             Nonces(0, 0)
         with pytest.raises(TypeError):
@@ -143,27 +91,23 @@ class TestNonces:
         with pytest.raises(ValueError):
             Nonces(8, 4, b"\x00" * 5, "big", True)
 
-    @pytest.mark.parametrize(
-        "size, c_size", list(zip(SIZES, C_SIZES))
-    )
-    def test_set_counter(self, size, c_size):
-        nonces = Nonces(size, c_size)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_set_counter(self, vector):
+        nonces = Nonces(vector["size"], vector["counter_size"])
         with pytest.raises(TypeError):
-            nonces.set_counter('test')
+            nonces.set_counter("test")
         with pytest.raises(ValueError):
             nonces.set_counter(nonces.max_counter + 1)
         nonces.set_counter(nonces.max_counter)
         with pytest.raises(AssertionError):
             nonces.set_counter(0)
 
-    @pytest.mark.parametrize(
-        "size, c_size", list(zip(SIZES, C_SIZES))
-    )
-    def test_increment_setter(self, size, c_size):
-        nonces = Nonces(size, c_size)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_increment_setter(self, vector):
+        nonces = Nonces(vector["size"], vector["counter_size"])
         nonces.update()
         with pytest.raises(TypeError):
-            nonces.increment = 'test'
+            nonces.increment = "test"
         with pytest.raises(ValueError):
             nonces.increment = 0
         with pytest.raises(ValueError):
@@ -175,11 +119,9 @@ class TestNonces:
         nonces.update()
         assert nonces.counter == nonces.max_counter
 
-    @pytest.mark.parametrize(
-        "size, c_size", list(zip(SIZES, C_SIZES))
-    )
-    def test_properties(self, size, c_size):
-        nonces = Nonces(size, c_size)
+    @pytest.mark.parametrize("vector", VECTORS)
+    def test_properties(self, vector):
+        nonces = Nonces(vector["size"], vector["counter_size"])
         nonces.update()
         assert isinstance(nonces.counter_bytes, bytes)
         assert isinstance(nonces.seed_bytes, bytes)
@@ -190,3 +132,4 @@ class TestNonces:
         assert isinstance(nonces.size, int)
         assert isinstance(nonces.counter_size, int)
         assert isinstance(nonces.seed_size, int)
+        assert isinstance(nonces.order, str)
