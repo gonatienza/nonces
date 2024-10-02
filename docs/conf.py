@@ -5,16 +5,23 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('../src'))
+
+import nonces  # noqa: E402
+
 try:
     import sphinx_rtd_theme
 except ImportError:
     sphinx_rtd_theme = None
 
 
-project = "Nonces"
-copyright = "2024, Gonzalo Atienza Rela"
-author = "Gonzalo Atienza Rela"
-release = "1.0.0"
+project = nonces.__title__
+copyright = nonces.__copyright__
+author = nonces.__author__
+release = nonces.__version__
 
 extensions = [
     "sphinx.ext.autodoc",
