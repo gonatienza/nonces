@@ -32,9 +32,11 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
-    "sphinx_rtd_theme"
+    "sphinx.ext.viewcode"
 ]
+
+if sphinx_rtd_theme is not None:
+    extensions.append("sphinx_rtd_theme")
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build"]
