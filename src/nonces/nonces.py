@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import ClassVar, Optional, TypeVar
+from typing import ClassVar, Optional
 from os import urandom
-
-
-_Nonce = TypeVar("_Nonce", bound="Nonce")
 
 
 class Nonce(bytes):
@@ -23,13 +20,11 @@ class Nonce(bytes):
     Each unique nonce value is an instantiated
         object of this bytes subclass.
     """
+
     __module__ = "nonces"
 
     @classmethod
-    def from_bytes(
-        cls,
-        nonce: bytes
-    ) -> _Nonce:
+    def from_bytes(cls, nonce: bytes) -> "Nonce":
         """
         Load a unique nonce value.
 
@@ -42,7 +37,7 @@ class Nonce(bytes):
         return cls(nonce)
 
     @classmethod
-    def random(cls, size) -> _Nonce:
+    def random(cls, size: int) -> "Nonce":
         """
         Get random Nonce from a size.
 
@@ -153,13 +148,9 @@ class Nonces:
         :rtype: Nonce.
         """
         if self._trailing_counter is True:
-            return Nonce.from_bytes(
-                self._seed_bytes + self._counter_bytes
-            )
+            return Nonce.from_bytes(self._seed_bytes + self._counter_bytes)
         else:
-            return Nonce.from_bytes(
-                self._counter_bytes + self._seed_bytes
-            )
+            return Nonce.from_bytes(self._counter_bytes + self._seed_bytes)
 
     def set_counter(self, counter: int) -> Nonce:
         """
