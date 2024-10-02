@@ -1,10 +1,3 @@
-Installation
-============
-
-.. code-block::
-
-      pip install nonces
-
 Nonces
 ======
 
@@ -18,6 +11,13 @@ along a single cryptographic key.
 The module contains two main classes:
 :class:`nonces.Nonce` and
 :class:`nonces.Nonces`.
+
+Installation
+------------
+
+.. code-block::
+
+      pip install nonces
 
 .. class:: Nonce(bytes)
    
