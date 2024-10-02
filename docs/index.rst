@@ -1,152 +1,20 @@
 Nonces
-=====================
+======
 
-.. currentmodule:: nonces
+.. module:: nonces
 
 Nonces is a module to generate nonces for cryptographic purposes.
 
-Te module contains two main classes: :class:`nonces.Nonce` and
+When using nonces it is imperative NEVER to reuse ANY value returned by the class
+along a single cryptographic key.
+
+The module contains two main classes:
+:class:`nonces.Nonce` and
 :class:`nonces.Nonces`.
-
-
-Installation
---------------------------
-
-.. code-block::
-
-   pip install nonces
-
-
-Example of random `Nonce`.
---------------------------
-
-.. code-block::
-
-   from nonces import Nonce
-
-   # This will generate a random one-time 24 bytes nonce
-   nonce = Nonce.random(24)
-
-
-Example of `Nonces` with counter.
----------------------------------
-
-.. code-block::
-
-   from nonces import Nonces
-
-   # This will initiate an 8 bytes nonce with a 4 bytes counter
-   nonces = Nonces(size=8, counter_size=4)
-
-   # By default the counter is big endian with a random seed
-   # and the counter trailing at the end of the full nonce bytes
-
-   # Get the current nonce
-   nonce = nonces.nonce
-
-   print(nonce)
-
-   # Update the current counter
-   nonce = nonces.update()
-
-   print(nonce)
-
-We can update the counter:
-
-.. code-block::
-
-   nonce = nonces.set_counter(10)
-
-   print(nonce)
-
-   # Get the counter value
-   print(nonces.counter)
-
-   # Get the counter value in bytes
-   nonces.counter_bytes
-
-If we run out of nonces an OverFlowError exception will be triggered  
-
-.. code-block::
-
-   nonces.set_counter(nonces.max_counter)
-   nonces.update()
-
-We can also use a specific seed:
-
-.. code-block::
-
-   # We can create a new object with the seed and change the byte order
-   # to little endian and a non-trailing counter (i.e, counter + nonce)
-
-   seed = b"\xff" * 4
-   nonces = Nonces(
-      size=8,
-      counter_size=4,
-      seed=seed,
-      order='little',
-      trailing_counter=False
-   )
-   for i in range(10):
-      nonces.update()
-
-   b'\x01\x00\x00\x00\xff\xff\xff\xff'
-   b'\x02\x00\x00\x00\xff\xff\xff\xff'
-   b'\x03\x00\x00\x00\xff\xff\xff\xff'
-   b'\x04\x00\x00\x00\xff\xff\xff\xff'
-   b'\x05\x00\x00\x00\xff\xff\xff\xff'
-   b'\x06\x00\x00\x00\xff\xff\xff\xff'
-   b'\x07\x00\x00\x00\xff\xff\xff\xff'
-   b'\x08\x00\x00\x00\xff\xff\xff\xff'
-   b'\t\x00\x00\x00\xff\xff\xff\xff'
-   b'\n\x00\x00\x00\xff\xff\xff\xff'
-
-   assert nonces.seed_bytes == seed
-
-We can also set the increment value:
-
-.. code-block::
-
-   nonces = Nonces(size=8, counter_size=4, seed=seed)
-
-   nonces.increment = 255
-
-   for i in range(10):
-      nonces.update()
-
-   b'\xff\xff\xff\xff\x00\x00\x00\xff'
-   b'\xff\xff\xff\xff\x00\x00\x01\xfe'
-   b'\xff\xff\xff\xff\x00\x00\x02\xfd'
-   b'\xff\xff\xff\xff\x00\x00\x03\xfc'
-   b'\xff\xff\xff\xff\x00\x00\x04\xfb'
-   b'\xff\xff\xff\xff\x00\x00\x05\xfa'
-   b'\xff\xff\xff\xff\x00\x00\x06\xf9'
-   b'\xff\xff\xff\xff\x00\x00\x07\xf8'
-   b'\xff\xff\xff\xff\x00\x00\x08\xf7'
-   b'\xff\xff\xff\xff\x00\x00\t\xf6'
-
-We can leverage bytes encoding options:
-
-.. code-block::
-
-   nonces = Nonces(size=8, counter_size=4)
-
-   nonce = nonces.nonce
-
-   nonce_hex = nonce.hex()
-
-   new_nonce = Nonce.fromhex(nonce_hex)
-
-   assert nonce == new_nonce
-
-
-Reference
----------
 
 .. class:: Nonce(bytes)
    
-   Each unique nonce value is an instantiated
-      object of this bytes subclass.
+   Each unique nonce value is an instantiated object of this bytes subclass.
 
    .. method:: from_bytes(nonce)
       
@@ -161,6 +29,15 @@ Reference
 
       :param size: size of the nonce.
       :return: Nonce object.
+
+   Example of random nonce:
+
+   .. code-block::
+
+      from nonces import Nonce
+
+      # This will generate a random one-time 24 bytes nonce
+      nonce = Nonce.random(24)
 
 .. class:: Nonces(size, counter_size, seed, order, trailing_counter)
 
@@ -183,12 +60,71 @@ Reference
       True means nonce + counter
       False means counter + nonce
 
+   Example of nonces with counter:
+
+   .. code-block::
+
+      from nonces import Nonces
+
+      # This will initiate an 8 bytes nonce with a 4 bytes counter
+      nonces = Nonces(size=8, counter_size=4)
+
+      # By default the counter is big endian with a random seed
+      # and the counter trailing at the end of the full nonce bytes
+
+      # Get the current nonce
+      nonce = nonces.nonce
+
+      print(nonce)
+
+   We can also use a specific seed:
+
+   .. code-block::
+
+      from nonces import Nonces
+
+      # We can create a new object with the seed and change the byte order
+      # to little endian and a non-trailing counter (i.e, counter + nonce)
+
+      seed = b"\xff" * 4
+      nonces = Nonces(
+         size=8,
+         counter_size=4,
+         seed=seed,
+         order='little',
+         trailing_counter=False
+      )
+      for i in range(10):
+         nonces.update()
+
+      b'\x01\x00\x00\x00\xff\xff\xff\xff'
+      b'\x02\x00\x00\x00\xff\xff\xff\xff'
+      b'\x03\x00\x00\x00\xff\xff\xff\xff'
+      b'\x04\x00\x00\x00\xff\xff\xff\xff'
+      b'\x05\x00\x00\x00\xff\xff\xff\xff'
+      b'\x06\x00\x00\x00\xff\xff\xff\xff'
+      b'\x07\x00\x00\x00\xff\xff\xff\xff'
+      b'\x08\x00\x00\x00\xff\xff\xff\xff'
+      b'\t\x00\x00\x00\xff\xff\xff\xff'
+      b'\n\x00\x00\x00\xff\xff\xff\xff'
+
+      assert nonces.seed_bytes == seed
+
    .. method:: update()
 
       Update nonce value incrementing counter.
 
       :raises: OverflowError in case of counter overflow.
       :return: Current nonce.
+
+   We can update to get the first counted nonce:
+
+   .. code-block::
+   
+      # Update the current counter
+      nonce = nonces.update()
+
+      print(nonce)
 
    .. method:: set_counter(counter)
 
@@ -198,11 +134,89 @@ Reference
       :raises: ValueError or AssertionError.
       :return: Current nonce.
 
+   We can set the counter:
+
+   .. code-block::
+
+      nonce = nonces.set_counter(255)
+
+      print(nonce)
+
+      # Get the counter value
+      print(nonces.counter)
+
+      # Get the counter value in bytes
+      nonces.counter_bytes
+
+   If we try to set the counter to a lower value an exception will be triggered
+   to avoid nonce reuse:
+
+   .. code-block::
+
+      try:
+         nonce = nonces.set_counter(1)
+      except Exception as e:
+         print(e)
+
+   If we run out of nonces an OverFlowError exception will be triggered:
+
+   .. code-block::
+
+      # nonces.max_counter is a property that returns the maximum counter available
+      # for the counter bytes lenght
+
+      nonces.set_counter(nonces.max_counter)
+      try:
+         nonces.update()
+      except Exception as e:
+         print(e)
+
    .. method:: counter_to_bytes()
 
       Get counter in bytes.
 
       :return: Counter bytes
+
+
+   We can also set the increment value:
+
+   .. code-block::
+
+      from nonces import Nonces
+
+      nonces = Nonces(size=8, counter_size=4, seed=seed)
+
+      nonces.increment = 255
+
+      for i in range(10):
+         nonces.update()
+
+      b'\xff\xff\xff\xff\x00\x00\x00\xff'
+      b'\xff\xff\xff\xff\x00\x00\x01\xfe'
+      b'\xff\xff\xff\xff\x00\x00\x02\xfd'
+      b'\xff\xff\xff\xff\x00\x00\x03\xfc'
+      b'\xff\xff\xff\xff\x00\x00\x04\xfb'
+      b'\xff\xff\xff\xff\x00\x00\x05\xfa'
+      b'\xff\xff\xff\xff\x00\x00\x06\xf9'
+      b'\xff\xff\xff\xff\x00\x00\x07\xf8'
+      b'\xff\xff\xff\xff\x00\x00\x08\xf7'
+      b'\xff\xff\xff\xff\x00\x00\t\xf6'
+
+   We can leverage bytes encoding options:
+
+   .. code-block::
+
+      from nonces import Nonce, Nonces
+
+      nonces = Nonces(size=8, counter_size=4)
+
+      nonce = nonces.nonce
+
+      nonce_hex = nonce.hex()
+
+      new_nonce = Nonce.fromhex(nonce_hex)
+
+      assert nonce == new_nonce
 
    .. attribute:: counter_bytes
 
@@ -226,7 +240,7 @@ Reference
 
    .. attribute:: counter
 
-      :return: urrent counter value.
+      :return: current counter value.
 
    .. attribute:: max_counter
 
