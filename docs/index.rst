@@ -8,16 +8,16 @@ Nonces is a module to generate nonces for cryptographic purposes.
 When using nonces it is imperative NEVER to reuse ANY value returned by the class
 along a single cryptographic key.
 
-The module contains two main classes:
-:class:`nonces.Nonce` and
-:class:`nonces.Nonces`.
-
 Installation
 ------------
 
 .. code-block::
 
       pip install nonces
+
+The module contains two main classes:
+:class:`nonces.Nonce` and
+:class:`nonces.Nonces`.
 
 .. class:: Nonce(bytes)
    
